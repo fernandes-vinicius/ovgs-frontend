@@ -1,6 +1,9 @@
 import { NavLink } from "@/shared/components/nav-link";
 
-const NAV_ITEMS = [{ href: "/clientes", label: "Clientes" }];
+const NAV_ITEMS = [
+  { href: "/clientes", label: "Clientes" },
+  { href: "/tipos-transporte", label: "Tipos de Transporte" },
+];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
