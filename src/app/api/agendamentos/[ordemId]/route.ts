@@ -16,6 +16,18 @@ interface RouteParams {
   params: Promise<{ ordemId: string }>;
 }
 
+export async function GET(_request: Request, { params }: RouteParams) {
+  const { ordemId } = await params;
+  const agendamento = inMemoryAgendamentoRepository.findByOrdemId(ordemId);
+  if (!agendamento) {
+    return NextResponse.json(
+      { error: "Agendamento não encontrado para esta ordem de venda." },
+      { status: 404 },
+    );
+  }
+  return NextResponse.json(agendamento);
+}
+
 export async function POST(request: Request, { params }: RouteParams) {
   const { ordemId } = await params;
   const parsed = await parseJsonBody(request, definirAgendamentoSchema);
