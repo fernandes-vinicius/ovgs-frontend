@@ -1,6 +1,7 @@
 import { NavLink } from "@/shared/components/nav-link";
 
 const NAV_ITEMS = [
+  { href: "/ordens-de-venda", label: "Ordens de Venda" },
   { href: "/clientes", label: "Clientes" },
   { href: "/tipos-transporte", label: "Tipos de Transporte" },
   { href: "/itens", label: "Itens" },
