@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { Cliente } from "@/features/clientes/domain/cliente";
 import type { TipoTransporte } from "@/features/tipos-transporte/domain/tipo-transporte";
@@ -52,6 +52,14 @@ export function EditTransportDialog({
     cliente.tiposTransporteAutorizados.includes(tipo.id),
   );
 
+  // Ver comentário equivalente em monitoramento-page.tsx: sem `items`, o
+  // valor pré-preenchido (tipo atual da OV) mostraria o id cru em vez do
+  // nome até o usuário abrir o dropdown.
+  const tipoTransporteItems = useMemo(
+    () => Object.fromEntries(tiposAutorizados.map((tipo) => [tipo.id, tipo.nome])),
+    [tiposAutorizados],
+  );
+
   async function handleSave() {
     try {
       await changeOrderTransport.mutateAsync({ id: orderId, tipoTransporteId });
@@ -79,6 +87,7 @@ export function EditTransportDialog({
           <FieldLabel htmlFor="tipoTransporteId">Tipo de transporte</FieldLabel>
           <FieldContent>
             <Select
+              items={tipoTransporteItems}
               value={tipoTransporteId}
               onValueChange={(value) => setTipoTransporteId(value ?? "")}
             >
