@@ -145,7 +145,7 @@ export function SalesOrderDetail({ orderId }: SalesOrderDetailProps) {
           <CardTitle>Auditoria</CardTitle>
         </CardHeader>
         <CardContent>
-          <AuditTimeline events={auditEvents ?? []} />
+          <AuditTimeline events={auditEvents ?? []} tiposTransporte={tiposTransporte} />
         </CardContent>
       </Card>
 

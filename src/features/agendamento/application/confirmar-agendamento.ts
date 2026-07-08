@@ -12,6 +12,7 @@ export function confirmarAgendamento(ordemId: string, deps: Deps): Result<Agenda
   const agendamento = deps.agendamentoRepository.findByOrdemId(ordemId);
   if (!agendamento) return err(notFound("Agendamento não encontrado para esta ordem de venda."));
 
+  const estadoAnterior = { confirmado: agendamento.confirmado };
   const confirmado = deps.agendamentoRepository.confirmar(ordemId);
   if (!confirmado) return err(notFound("Agendamento não encontrado para esta ordem de venda."));
 
@@ -19,7 +20,7 @@ export function confirmarAgendamento(ordemId: string, deps: Deps): Result<Agenda
     entidadeTipo: "Agendamento",
     entidadeId: ordemId,
     acao: "ALTERACAO_AGENDAMENTO",
-    estadoAnterior: { confirmado: false },
+    estadoAnterior,
     estadoPosterior: { confirmado: true },
   });
 
