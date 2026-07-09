@@ -163,7 +163,7 @@ export function SalesOrderForm() {
           <FieldLegend variant="label">Itens</FieldLegend>
           <FieldGroup>
             {fields.map((field, index) => (
-              <Field key={field.id} orientation="horizontal">
+              <Field key={field.id} className="sm:flex-row sm:items-center sm:*:w-auto">
                 <FieldContent>
                   <Select
                     value={form.watch(`itens.${index}.itemId`)}

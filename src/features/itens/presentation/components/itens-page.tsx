@@ -21,14 +21,14 @@ export function ItensPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-semibold">Itens</h1>
           <p className="text-sm text-muted-foreground">
             Itens previamente cadastrados que podem ser associados a ordens de venda.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
           <Plus />
           Novo item
         </Button>

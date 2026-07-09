@@ -110,7 +110,7 @@ export function TipoTransporteFormDialog({
               </FieldContent>
             </Field>
 
-            <Field orientation="horizontal">
+            <Field className="sm:flex-row sm:items-center sm:*:w-auto">
               <FieldContent>
                 <FieldLabel htmlFor="ativo">Ativo</FieldLabel>
                 <FieldDescription>

@@ -7,15 +7,17 @@ import { cn } from "@/shared/lib/utils";
 interface NavLinkProps {
   href: string;
   children: React.ReactNode;
+  onNavigate?: () => void;
 }
 
-export function NavLink({ href, children }: NavLinkProps) {
+export function NavLink({ href, children, onNavigate }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={cn(
         "text-sm transition-colors hover:text-foreground",
         isActive ? "font-medium text-foreground" : "text-muted-foreground",

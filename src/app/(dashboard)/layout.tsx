@@ -1,3 +1,4 @@
+import { MobileNav } from "@/shared/components/mobile-nav";
 import { NavLink } from "@/shared/components/nav-link";
 
 const NAV_ITEMS = [
@@ -13,9 +14,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-6">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:gap-6 sm:px-6">
+          <MobileNav items={NAV_ITEMS} />
           <span className="font-heading text-sm font-semibold">OVGS</span>
-          <nav className="flex items-center gap-4">
+          <nav className="hidden items-center gap-4 md:flex">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.href} href={item.href}>
                 {item.label}
@@ -24,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
     </div>
   );
 }

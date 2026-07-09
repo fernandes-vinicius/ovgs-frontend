@@ -16,14 +16,18 @@ export function OrdensDeVendaPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-semibold">Ordens de venda</h1>
           <p className="text-sm text-muted-foreground">
             Criação e acompanhamento do ciclo de vida das ordens de venda.
           </p>
         </div>
-        <Button render={<Link href="/ordens-de-venda/nova" />} nativeButton={false}>
+        <Button
+          render={<Link href="/ordens-de-venda/nova" />}
+          nativeButton={false}
+          className="w-full sm:w-auto"
+        >
           <Plus />
           Nova ordem de venda
         </Button>
