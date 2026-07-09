@@ -126,7 +126,7 @@ export function SalesOrderDetail({ orderId }: SalesOrderDetailProps) {
           <ul className="flex flex-col gap-2">
             {order.itens.map((item, index) => (
               <li
-                key={`${item.itemId}-${index}`}
+                key={`${item.itemId}-${index.toString()}`}
                 className="flex items-center justify-between text-sm"
               >
                 <span>
