@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTiposTransporte } from "@/features/tipos-transporte/presentation/hooks/use-tipos-transporte";
 import { Pencil, Plus, Search } from "@/shared/components/icons";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -78,15 +79,17 @@ export function ClientesPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando clientes…</p>
+        <LoadingState message="Carregando clientes…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Não foi possível carregar os clientes.</p>
+        <ErrorState message="Não foi possível carregar os clientes." />
       ) : clientesFiltrados.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {clientes?.length
-            ? "Nenhum cliente encontrado para essa busca."
-            : "Nenhum cliente cadastrado ainda."}
-        </p>
+        <EmptyState
+          message={
+            clientes?.length
+              ? "Nenhum cliente encontrado para essa busca."
+              : "Nenhum cliente cadastrado ainda."
+          }
+        />
       ) : (
         <Table>
           <TableHeader>

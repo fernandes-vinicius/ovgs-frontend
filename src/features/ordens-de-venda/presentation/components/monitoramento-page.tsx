@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useClientes } from "@/features/clientes/presentation/hooks/use-clientes";
 import { useTiposTransporte } from "@/features/tipos-transporte/presentation/hooks/use-tipos-transporte";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, FieldContent, FieldLabel } from "@/shared/components/ui/field";
@@ -187,13 +188,11 @@ export function MonitoramentoPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando ordens de venda…</p>
+        <LoadingState message="Carregando ordens de venda…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Não foi possível carregar as ordens de venda.</p>
+        <ErrorState message="Não foi possível carregar as ordens de venda." />
       ) : !orders?.length ? (
-        <p className="text-sm text-muted-foreground">
-          Nenhuma ordem de venda encontrada para os filtros aplicados.
-        </p>
+        <EmptyState message="Nenhuma ordem de venda encontrada para os filtros aplicados." />
       ) : (
         <SalesOrderTable orders={orders} clientes={clientes} tiposTransporte={tiposTransporte} />
       )}

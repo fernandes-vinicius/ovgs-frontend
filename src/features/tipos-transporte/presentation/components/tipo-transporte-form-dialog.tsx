@@ -99,8 +99,14 @@ export function TipoTransporteFormDialog({
             <Field>
               <FieldLabel htmlFor="nome">Nome</FieldLabel>
               <FieldContent>
-                <Input id="nome" autoComplete="off" {...form.register("nome")} />
-                <FieldError errors={[form.formState.errors.nome]} />
+                <Input
+                  id="nome"
+                  autoComplete="off"
+                  aria-invalid={!!form.formState.errors.nome}
+                  aria-describedby="nome-error"
+                  {...form.register("nome")}
+                />
+                <FieldError id="nome-error" errors={[form.formState.errors.nome]} />
               </FieldContent>
             </Field>
 

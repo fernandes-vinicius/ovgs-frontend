@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useClientes } from "@/features/clientes/presentation/hooks/use-clientes";
 import { useTiposTransporte } from "@/features/tipos-transporte/presentation/hooks/use-tipos-transporte";
 import { Plus } from "@/shared/components/icons";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Button } from "@/shared/components/ui/button";
 import { useSalesOrders } from "../hooks/use-sales-orders";
 import { SalesOrderTable } from "./sales-order-table";
@@ -29,11 +30,11 @@ export function OrdensDeVendaPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando ordens de venda…</p>
+        <LoadingState message="Carregando ordens de venda…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Não foi possível carregar as ordens de venda.</p>
+        <ErrorState message="Não foi possível carregar as ordens de venda." />
       ) : !orders?.length ? (
-        <p className="text-sm text-muted-foreground">Nenhuma ordem de venda criada ainda.</p>
+        <EmptyState message="Nenhuma ordem de venda criada ainda." />
       ) : (
         <SalesOrderTable orders={orders} clientes={clientes} tiposTransporte={tiposTransporte} />
       )}

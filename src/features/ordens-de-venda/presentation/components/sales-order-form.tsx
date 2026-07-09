@@ -95,7 +95,12 @@ export function SalesOrderForm() {
                 form.setValue("clienteId", value ?? "", { shouldValidate: true })
               }
             >
-              <SelectTrigger id="clienteId" className="w-full">
+              <SelectTrigger
+                id="clienteId"
+                className="w-full"
+                aria-invalid={!!form.formState.errors.clienteId}
+                aria-describedby="clienteId-error"
+              >
                 <SelectValue placeholder="Selecione um cliente" />
               </SelectTrigger>
               <SelectContent>
@@ -106,7 +111,7 @@ export function SalesOrderForm() {
                 ))}
               </SelectContent>
             </Select>
-            <FieldError errors={[form.formState.errors.clienteId]} />
+            <FieldError id="clienteId-error" errors={[form.formState.errors.clienteId]} />
           </FieldContent>
         </Field>
 
@@ -120,7 +125,12 @@ export function SalesOrderForm() {
               }
               disabled={!clienteSelecionado}
             >
-              <SelectTrigger id="tipoTransporteId" className="w-full">
+              <SelectTrigger
+                id="tipoTransporteId"
+                className="w-full"
+                aria-invalid={!!form.formState.errors.tipoTransporteId}
+                aria-describedby="tipoTransporteId-error"
+              >
                 <SelectValue
                   placeholder={
                     clienteSelecionado
@@ -137,7 +147,10 @@ export function SalesOrderForm() {
                 ))}
               </SelectContent>
             </Select>
-            <FieldError errors={[form.formState.errors.tipoTransporteId]} />
+            <FieldError
+              id="tipoTransporteId-error"
+              errors={[form.formState.errors.tipoTransporteId]}
+            />
             {clienteSelecionado && tiposAutorizados.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 Este cliente não possui tipos de transporte autorizados.
@@ -158,7 +171,11 @@ export function SalesOrderForm() {
                       form.setValue(`itens.${index}.itemId`, value ?? "", { shouldValidate: true })
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger
+                      className="w-full"
+                      aria-invalid={!!form.formState.errors.itens?.[index]?.itemId}
+                      aria-describedby={`itens-${index}-itemId-error`}
+                    >
                       <SelectValue placeholder="Selecione um item" />
                     </SelectTrigger>
                     <SelectContent>
@@ -169,13 +186,18 @@ export function SalesOrderForm() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FieldError errors={[form.formState.errors.itens?.[index]?.itemId]} />
+                  <FieldError
+                    id={`itens-${index}-itemId-error`}
+                    errors={[form.formState.errors.itens?.[index]?.itemId]}
+                  />
                 </FieldContent>
                 <Input
                   type="number"
                   min={1}
                   step={1}
                   className="w-24"
+                  aria-label="Quantidade"
+                  aria-invalid={!!form.formState.errors.itens?.[index]?.quantidade}
                   {...form.register(`itens.${index}.quantidade`, { valueAsNumber: true })}
                 />
                 <Button

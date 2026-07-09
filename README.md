@@ -5,7 +5,9 @@ original é escrito majoritariamente do ponto de vista do perfil Back-end (NestJ
 Docker Compose), mas define explicitamente um perfil **Front-end** separado — implementar a interface
 de Gestão de OVs, Monitoramento Operacional, Central de Agendamento, Cadastros básicos, integração com
 APIs, tratamento de estados e validações de entrada, com **APIs simuladas (mockadas) permitidas**. É
-esse o escopo atacado aqui: só o perfil Front-end, sem backend real, sem Docker/NestJS.
+esse o escopo atacado aqui: só o perfil Front-end, sem backend real, sem NestJS/Prisma. Um
+`docker-compose.yml` opcional existe só como conveniência para subir a própria aplicação Next.js (ver
+"Rodando com Docker" abaixo), não como stack de backend.
 
 ## Como rodar
 
@@ -30,6 +32,26 @@ bun run build      # build de produção
 
 Não há `.env` a configurar — a "API" é servida pelos próprios Route Handlers do Next.js dentro do
 mesmo processo (ver seção "API mockada" abaixo).
+
+### Rodando com Docker (opcional)
+
+Diferencial de execução, não exigido pelo perfil Front-end (isso pertenceria ao perfil Back-end do
+desafio) — só uma forma alternativa e conveniente de subir a aplicação:
+
+```bash
+docker compose up --build
+```
+
+Sobe a aplicação em modo produção em [http://localhost:3000](http://localhost:3000). O
+`Dockerfile` é multi-stage (`deps` → `builder` → `runner`), usando o output `standalone` do Next.js
+(configurado em `next.config.ts`) pra gerar uma imagem final enxuta, sem o toolchain de build nem o
+`node_modules` completo.
+
+### CI
+
+`.github/workflows/ci.yml` roda lint (Biome), typecheck (`tsc --noEmit`), a suíte Vitest e o build de
+produção em todo push/PR para `main`. Azure DevOps é citado no desafio original, mas sem acesso a um
+projeto Azure DevOps real aqui GitHub Actions demonstra a mesma competência de CI/CD.
 
 ## Stack e por que cada peça foi escolhida
 
@@ -203,22 +225,36 @@ Registrados aqui porque revelam decisões e não são óbvios lendo só o códig
   pré-preenchido da querystring/prop (Monitoramento, `EditTransportDialog`). Corrigido passando a prop
   `items={Record<value,label>}` documentada do `Select.Root`.
 
+## Acessibilidade
+
+Os 5 formulários RHF do projeto (cliente, tipo de transporte, item, ordem de venda, agendamento)
+conectam `aria-invalid`/`aria-describedby` de cada campo ao seu `FieldError` (`role="alert"`). Os
+componentes shadcn (`Input`, `Select`, `Textarea`, `Checkbox`, `Switch`) já vêm com estilo
+`aria-invalid:` pronto pela CLI — só faltava passar a prop, o que agora é feito em todo campo
+validado. Estados de loading/erro/vazio são padronizados em `shared/components/list-state.tsx`
+(`LoadingState`/`ErrorState`/`EmptyState`, com `role="status"`/`role="alert"`) e usados em todas as
+listagens e no detalhe de OV.
+
 ## Testes
 
-`bun run test` roda 21 testes em 7 arquivos via Vitest:
+`bun run test` roda 30 testes em 8 arquivos via Vitest:
 
 - **Unitário** (domain/application, sem I/O): `state-machine.test.ts`, `is-transport-authorized.test.ts`,
   `create-sales-order.test.ts`.
 - **Integração** (Route Handlers chamados diretamente, `Request` construído na mão, sem subir
   servidor): `ordens-de-venda-create.test.ts` (201 + audit event / 422 transporte não autorizado),
-  `ordens-de-venda-status.test.ts` (422 fora de sequência / 200 válido / 404 inexistente).
+  `ordens-de-venda-status.test.ts` (422 fora de sequência / 200 válido / 404 inexistente),
+  `agendamentos.test.ts` (definir, confirmar e reagendar — incluindo redefinição sem duplicar
+  registro, confirmação com estado anterior real na auditoria, e acúmulo de histórico em múltiplos
+  reagendamentos consecutivos).
 - **Componente** (RTL): `sales-order-form.test.tsx` valida os campos obrigatórios do form de criação
   de OV, com `fetch` mockado via `vi.stubGlobal` para determinismo sem rede real.
 
 ## Trade-offs assumidos
 
-- **Escopo só Front-end**: sem NestJS/Prisma/Docker Compose — isso pertence ao perfil Back-end do
-  desafio, que é um perfil de candidatura separado do perfil atacado aqui.
+- **Escopo só Front-end**: sem NestJS/Prisma — isso pertence ao perfil Back-end do desafio, que é um
+  perfil de candidatura separado do atacado aqui. O `docker-compose.yml` deste repo é só um
+  diferencial de execução (sobe a própria aplicação Next.js), não uma stack de backend.
 - **Persistência in-memory**: estado reseta a cada restart do servidor Next — aceitável para avaliação
   técnica, documentado explicitamente em vez de escondido.
 - **Auditoria in-memory** e não paginada: suficiente para o volume de um desafio técnico; um backend

@@ -26,11 +26,13 @@ de OVs, monitoramento, central de agendamento, auditoria). As três sagas do pro
 na seção 7, debounce de filtro na seção 8, composição de sagas na seção 9) cobrem três padrões de
 orquestração genuinamente distintos. Vários bugs reais pegos e corrigidos ao longo do caminho via
 verificação em navegador real (não só testes unitários/curl) — incluindo um bug de fuso horário em
-`shared/lib/date.ts` e um bug de precisão no histórico de auditoria (seção 10). A seção 11 (Testes em
-Vitest) também está concluída — 21 testes cobrindo domain, use-case, integração dos route handlers e
-componente RTL, todos passando, junto com lint/tsc/build limpos. Restam as seções 12 (README) e 13
-(diferenciais opcionais). Cópia deste plano também salva em `ovgs-frontend/docs/plano-implementacao.md`
-para referência futura.
+`shared/lib/date.ts` e um bug de precisão no histórico de auditoria (seção 10). **Todas as 13 seções do
+plano estão concluídas**: seção 11 (Testes em Vitest, 30 testes cobrindo domain, use-cases, integração
+dos route handlers e componente RTL), seção 12 (README completo) e seção 13 (diferenciais — mais
+cenários de agendamento/reagendamento, acessibilidade via `aria-invalid`/`aria-describedby` nos 5
+forms, estados de loading/erro/vazio padronizados em `list-state.tsx`, CI no GitHub Actions, e
+Dockerfile/docker-compose verificados de ponta a ponta). Cópia deste plano também salva em
+`ovgs-frontend/docs/plano-implementacao.md` para referência futura.
 
 **Diretriz de UI (combinada com o candidato)**: usar os componentes shadcn/ui sempre no estilo padrão
 gerado pela CLI — nunca customizar radius, border ou shadow. A qualidade visual "premium" vem da
@@ -468,13 +470,38 @@ que o README vai justificar explicitamente como trade-off arquitetural.
       reforça a narrativa de verificação real (não só "escrevi o código e funcionou de primeira")
       pedida no README de um desafio técnico sênior
 
-### 13. Diferenciais (só se sobrar tempo)
-- [ ] Cobertura de testes ampliada (mais cenários de agendamento/reagendamento)
-- [ ] Acessibilidade (labels, foco, `aria-*` nos formulários e no dialog de agendamento)
-- [ ] Loading/empty/error states polidos em todas as listagens
-- [ ] Pipeline simples de CI (GitHub Actions: lint + test) — Azure DevOps citado na vaga, mas sem
-      acesso a um projeto Azure DevOps real aqui; GitHub Actions demonstra a mesma competência de CI/CD
-- [ ] `docker-compose.yml` simples só para rodar a app (não é exigido no perfil Front-end, é nice-to-have de execução)
+### 13. Diferenciais  ✅ **concluído**
+- [x] Cobertura de testes ampliada (mais cenários de agendamento/reagendamento): novo
+      `tests/integration/agendamentos.test.ts` (9 testes) cobrindo GET 404 sem agendamento, POST
+      definir (201 + audit event), POST 404 pra ordem inexistente, redefinir sem duplicar registro,
+      PATCH confirmar (200 + audit event com estado anterior real), confirmar sem agendamento (404),
+      PATCH reagendar (zera confirmação, acumula histórico), múltiplos reagendamentos em sequência
+      (histórico com 2 entradas), reagendar sem agendamento (404). Suíte total: 30 testes em 8 arquivos.
+- [x] Acessibilidade — `aria-invalid`/`aria-describedby` wired nos 5 forms RHF do projeto (cliente,
+      tipo de transporte, item, ordem de venda, agendamento), conectando cada Input/Select ao seu
+      `FieldError` (que já tinha `role="alert"`). Achado real: os componentes shadcn (`input.tsx`,
+      `select.tsx`, `textarea.tsx`, `checkbox.tsx`, `switch.tsx`, `button.tsx`) já vêm com estilo
+      `aria-invalid:` do Tailwind pronto pela CLI, mas nenhum form estava de fato passando a prop —
+      a estilização de erro existia sem nunca ser ativada. Também adicionado `aria-label="Quantidade"`
+      no input numérico sem label visível do form de itens da OV. Pagination e botão de fechar do
+      Dialog já vinham com labels acessíveis de fábrica (shadcn), sem necessidade de ajuste.
+- [x] Loading/empty/error states polidos em todas as listagens: novo componente compartilhado
+      `shared/components/list-state.tsx` (`LoadingState`/`ErrorState`/`EmptyState`, com ícone +
+      `role="status"`/`role="alert"`) substituindo os `<p>` soltos nas 6 páginas de listagem
+      (clientes, tipos de transporte, itens, ordens de venda, monitoramento, central de agendamento)
+      e no detalhe de OV — visual consistente em todo o app em vez de texto simples repetido em
+      cada página.
+- [x] Pipeline de CI (`.github/workflows/ci.yml`): checkout → setup Bun → install (frozen lockfile)
+      → lint (Biome) → typecheck (`tsc --noEmit`) → test (Vitest) → build, em push/PR pra `main`.
+      Azure DevOps citado na vaga, mas sem acesso a um projeto Azure DevOps real aqui; GitHub Actions
+      demonstra a mesma competência de CI/CD.
+- [x] `Dockerfile` (multi-stage: deps → builder → runner com `oven/bun:1-slim`) + `docker-compose.yml`
+      (serviço único `web`, porta 3000) + `.dockerignore`. `next.config.ts` ganhou `output: "standalone"`
+      pra imagem enxuta. Verificado de ponta a ponta: `docker compose build` e um container rodando a
+      imagem gerada respondem 200 em `/clientes` e `/api/clientes`.
+- [x] Verificado no final de tudo: `bun run test` (30 testes), `bun run lint`, `bunx tsc --noEmit` e
+      `bun run build` limpos; páginas de listagem retornando 200 no dev server rodando (Fast Refresh
+      pegou as mudanças de UI sem erro).
 
 ## Verificação
 

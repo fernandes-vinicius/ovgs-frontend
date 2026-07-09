@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useClientes } from "@/features/clientes/presentation/hooks/use-clientes";
 import { useSalesOrders } from "@/features/ordens-de-venda/presentation/hooks/use-sales-orders";
 import { useTiposTransporte } from "@/features/tipos-transporte/presentation/hooks/use-tipos-transporte";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { AgendamentoRow } from "./agendamento-row";
 
@@ -39,13 +40,11 @@ export function CentralAgendamentoPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando ordens de venda…</p>
+        <LoadingState message="Carregando ordens de venda…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Não foi possível carregar as ordens de venda.</p>
+        <ErrorState message="Não foi possível carregar as ordens de venda." />
       ) : !ordensRelevantes.length ? (
-        <p className="text-sm text-muted-foreground">
-          Nenhuma ordem de venda planejada aguardando agendamento no momento.
-        </p>
+        <EmptyState message="Nenhuma ordem de venda planejada aguardando agendamento no momento." />
       ) : (
         <Table>
           <TableHeader>

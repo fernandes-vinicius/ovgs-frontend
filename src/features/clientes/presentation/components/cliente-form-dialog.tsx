@@ -102,16 +102,28 @@ export function ClienteFormDialog({ open, onOpenChange, cliente }: ClienteFormDi
             <Field>
               <FieldLabel htmlFor="nome">Nome</FieldLabel>
               <FieldContent>
-                <Input id="nome" autoComplete="off" {...form.register("nome")} />
-                <FieldError errors={[form.formState.errors.nome]} />
+                <Input
+                  id="nome"
+                  autoComplete="off"
+                  aria-invalid={!!form.formState.errors.nome}
+                  aria-describedby="nome-error"
+                  {...form.register("nome")}
+                />
+                <FieldError id="nome-error" errors={[form.formState.errors.nome]} />
               </FieldContent>
             </Field>
 
             <Field>
               <FieldLabel htmlFor="documento">Documento (CNPJ/CPF)</FieldLabel>
               <FieldContent>
-                <Input id="documento" autoComplete="off" {...form.register("documento")} />
-                <FieldError errors={[form.formState.errors.documento]} />
+                <Input
+                  id="documento"
+                  autoComplete="off"
+                  aria-invalid={!!form.formState.errors.documento}
+                  aria-describedby="documento-error"
+                  {...form.register("documento")}
+                />
+                <FieldError id="documento-error" errors={[form.formState.errors.documento]} />
               </FieldContent>
             </Field>
 

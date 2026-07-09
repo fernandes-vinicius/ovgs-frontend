@@ -7,6 +7,7 @@ import { useClientes } from "@/features/clientes/presentation/hooks/use-clientes
 import { useItens } from "@/features/itens/presentation/hooks/use-itens";
 import { useTiposTransporte } from "@/features/tipos-transporte/presentation/hooks/use-tipos-transporte";
 import { ArrowRight, Loader2, Pencil } from "@/shared/components/icons";
+import { ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -32,11 +33,9 @@ export function SalesOrderDetail({ orderId }: SalesOrderDetailProps) {
   const { changeStatus, pendingStatus, isPending } = useChangeOrderStatus(orderId);
   const [editTransportOpen, setEditTransportOpen] = useState(false);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Carregando ordem de venda…</p>;
+  if (isLoading) return <LoadingState message="Carregando ordem de venda…" />;
   if (isError || !order) {
-    return (
-      <p className="text-sm text-destructive">Não foi possível carregar esta ordem de venda.</p>
-    );
+    return <ErrorState message="Não foi possível carregar esta ordem de venda." />;
   }
 
   const cliente = clientes?.find((c) => c.id === order.clienteId);

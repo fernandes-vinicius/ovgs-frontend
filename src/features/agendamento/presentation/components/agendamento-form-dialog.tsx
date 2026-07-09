@@ -138,8 +138,14 @@ export function AgendamentoFormDialog({
             <Field>
               <FieldLabel htmlFor="dataEntrega">Data de entrega</FieldLabel>
               <FieldContent>
-                <Input id="dataEntrega" type="date" {...form.register("dataEntrega")} />
-                <FieldError errors={[form.formState.errors.dataEntrega]} />
+                <Input
+                  id="dataEntrega"
+                  type="date"
+                  aria-invalid={!!form.formState.errors.dataEntrega}
+                  aria-describedby="dataEntrega-error"
+                  {...form.register("dataEntrega")}
+                />
+                <FieldError id="dataEntrega-error" errors={[form.formState.errors.dataEntrega]} />
               </FieldContent>
             </Field>
 
@@ -154,7 +160,12 @@ export function AgendamentoFormDialog({
                     form.setValue("janela", valorParaJanela(value), { shouldValidate: true })
                   }
                 >
-                  <SelectTrigger id="janela" className="w-full">
+                  <SelectTrigger
+                    id="janela"
+                    className="w-full"
+                    aria-invalid={!!form.formState.errors.janela?.inicio}
+                    aria-describedby="janela-error"
+                  >
                     <SelectValue placeholder="Selecione uma janela" />
                   </SelectTrigger>
                   <SelectContent>
@@ -165,7 +176,7 @@ export function AgendamentoFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <FieldError errors={[form.formState.errors.janela?.inicio]} />
+                <FieldError id="janela-error" errors={[form.formState.errors.janela?.inicio]} />
               </FieldContent>
             </Field>
           </FieldGroup>

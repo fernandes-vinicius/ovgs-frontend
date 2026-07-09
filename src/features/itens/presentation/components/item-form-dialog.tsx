@@ -74,16 +74,28 @@ export function ItemFormDialog({ open, onOpenChange }: ItemFormDialogProps) {
             <Field>
               <FieldLabel htmlFor="sku">SKU</FieldLabel>
               <FieldContent>
-                <Input id="sku" autoComplete="off" {...form.register("sku")} />
-                <FieldError errors={[form.formState.errors.sku]} />
+                <Input
+                  id="sku"
+                  autoComplete="off"
+                  aria-invalid={!!form.formState.errors.sku}
+                  aria-describedby="sku-error"
+                  {...form.register("sku")}
+                />
+                <FieldError id="sku-error" errors={[form.formState.errors.sku]} />
               </FieldContent>
             </Field>
 
             <Field>
               <FieldLabel htmlFor="nome">Nome</FieldLabel>
               <FieldContent>
-                <Input id="nome" autoComplete="off" {...form.register("nome")} />
-                <FieldError errors={[form.formState.errors.nome]} />
+                <Input
+                  id="nome"
+                  autoComplete="off"
+                  aria-invalid={!!form.formState.errors.nome}
+                  aria-describedby="nome-error"
+                  {...form.register("nome")}
+                />
+                <FieldError id="nome-error" errors={[form.formState.errors.nome]} />
               </FieldContent>
             </Field>
 
@@ -94,9 +106,11 @@ export function ItemFormDialog({ open, onOpenChange }: ItemFormDialogProps) {
                   id="unidade"
                   autoComplete="off"
                   placeholder="saco, unidade, m³…"
+                  aria-invalid={!!form.formState.errors.unidade}
+                  aria-describedby="unidade-error"
                   {...form.register("unidade")}
                 />
-                <FieldError errors={[form.formState.errors.unidade]} />
+                <FieldError id="unidade-error" errors={[form.formState.errors.unidade]} />
               </FieldContent>
             </Field>
           </FieldGroup>

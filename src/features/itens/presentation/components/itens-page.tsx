@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "@/shared/components/icons";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,
@@ -34,11 +35,11 @@ export function ItensPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando itens…</p>
+        <LoadingState message="Carregando itens…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Não foi possível carregar os itens.</p>
+        <ErrorState message="Não foi possível carregar os itens." />
       ) : !itens?.length ? (
-        <p className="text-sm text-muted-foreground">Nenhum item cadastrado ainda.</p>
+        <EmptyState message="Nenhum item cadastrado ainda." />
       ) : (
         <Table>
           <TableHeader>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Plus } from "@/shared/components/icons";
+import { EmptyState, ErrorState, LoadingState } from "@/shared/components/list-state";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -48,13 +49,11 @@ export function TiposTransportePage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando tipos de transporte…</p>
+        <LoadingState message="Carregando tipos de transporte…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar os tipos de transporte.
-        </p>
+        <ErrorState message="Não foi possível carregar os tipos de transporte." />
       ) : !tiposTransporte?.length ? (
-        <p className="text-sm text-muted-foreground">Nenhum tipo de transporte cadastrado ainda.</p>
+        <EmptyState message="Nenhum tipo de transporte cadastrado ainda." />
       ) : (
         <Table>
           <TableHeader>
