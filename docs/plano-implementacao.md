@@ -446,16 +446,27 @@ que o README vai justificar explicitamente como trade-off arquitetural.
       pré-existente e não relacionado em `sales-order-detail.tsx`, de commit anterior), `bunx tsc
       --noEmit` limpo, `bun run build` (16 páginas estáticas + 12 rotas de API, sem erros)
 
-### 12. Documentação (README)
-- [ ] Instruções de execução (`npm install`, `npm run dev`, `npm run test`)
-- [ ] Tecnologias utilizadas + por que (mapeando 1:1 pra stack da vaga)
-- [ ] Decisões arquiteturais (feature-based + clean-architecture-lite, Route Handlers como BFF)
-- [ ] Estratégia de modelagem do domínio (entidades, state machine, regra de autorização)
-- [ ] Estratégia de persistência (in-memory + trade-off documentado)
-- [ ] Divisão React Query vs Redux Toolkit+Saga (seção acima, resumida)
-- [ ] Escalabilidade (troca de repository in-memory → HTTP real sem tocar domain/application/presentation)
-- [ ] Performance (staleTime do React Query, code-splitting por rota do App Router, memoização em tabelas grandes)
-- [ ] Trade-offs assumidos (escopo só Front-end; sem Docker/NestJS pois é do perfil Back-end; auditoria in-memory)
+### 12. Documentação (README)  ✅ **concluído**
+- [x] Instruções de execução (`bun install`, `bun run dev`, `bun run test`) — incluindo nota
+      explicando por que `bun test` (sem "run") falha nos testes de componente (test runner nativo do
+      Bun, sem `vi.stubGlobal`/`vi.unstubAllGlobals`), enquanto `bun run test` roda o Vitest de fato
+- [x] Tecnologias utilizadas + por que (tabela mapeando 1:1 pra stack da vaga, incluindo as trocas
+      combinadas: Vitest, Biome, shadcn/ui, Bun)
+- [x] Decisões arquiteturais (feature-based + clean-architecture-lite, Route Handlers como BFF)
+- [x] Estratégia de modelagem do domínio (entidades, state machine como fonte única da verdade, regra
+      de autorização cliente↔transporte com defesa em profundidade, alteração de transporte pós-criação)
+- [x] Estratégia de persistência (in-memory + trade-off documentado)
+- [x] Divisão React Query vs Redux Toolkit+Saga (as três sagas resumidas com seus propósitos distintos)
+- [x] Escalabilidade (troca de repository in-memory → HTTP real sem tocar domain/application/presentation)
+- [x] Performance (staleTime do React Query, code-splitting por rota do App Router, memoização em
+      tabelas/listas com `useMemo` real do código — `sales-order-table.tsx`, `monitoramento-page.tsx`)
+- [x] Trade-offs assumidos (escopo só Front-end; sem Docker/NestJS pois é do perfil Back-end; auditoria
+      in-memory; paginação client-side)
+- [x] Seção extra: lista consolidada dos bugs reais encontrados e corrigidos ao longo do projeto (fuso
+      horário, auditoria mutável, precisão de auditoria, defesa em profundidade, Selects
+      uncontrolled→controlled e rótulo vindo de fora) — não pedida explicitamente no checklist, mas
+      reforça a narrativa de verificação real (não só "escrevi o código e funcionou de primeira")
+      pedida no README de um desafio técnico sênior
 
 ### 13. Diferenciais (só se sobrar tempo)
 - [ ] Cobertura de testes ampliada (mais cenários de agendamento/reagendamento)
