@@ -20,11 +20,17 @@ Prazo: entrega até sexta-feira. Prioridade: **cobertura completa e sólida do e
 perfil Front-end**, com Clean Code e arquitetura sênior. Diferenciais só entram se sobrar tempo
 (seção final do checklist).
 
-**Execução combinada com o candidato**: seções "1. Setup & Tooling", "2. Domain & Shared Kernel", "3.
-Mock API (BFF)", "4. Cadastros — Clientes" e "5. Cadastros — Tipos de Transporte" já implementadas e
-verificadas — seções 4 e 5 inclusive com teste de navegador real via Playwright (não só curl). Próxima
-seção a implementar: "6. Cadastros — Itens" — as demais seções ficam para iterações subsequentes.
-Cópia deste plano também salva em `ovgs-frontend/docs/plano-implementacao.md` para referência futura.
+**Execução combinada com o candidato**: seções 1 a 10 já implementadas e verificadas — o escopo
+obrigatório do perfil Front-end está com todas as telas funcionando ponta a ponta (cadastros, gestão
+de OVs, monitoramento, central de agendamento, auditoria). As três sagas do projeto (status/optimistic
+na seção 7, debounce de filtro na seção 8, composição de sagas na seção 9) cobrem três padrões de
+orquestração genuinamente distintos. Vários bugs reais pegos e corrigidos ao longo do caminho via
+verificação em navegador real (não só testes unitários/curl) — incluindo um bug de fuso horário em
+`shared/lib/date.ts` e um bug de precisão no histórico de auditoria (seção 10). A seção 11 (Testes em
+Vitest) também está concluída — 21 testes cobrindo domain, use-case, integração dos route handlers e
+componente RTL, todos passando, junto com lint/tsc/build limpos. Restam as seções 12 (README) e 13
+(diferenciais opcionais). Cópia deste plano também salva em `ovgs-frontend/docs/plano-implementacao.md`
+para referência futura.
 
 **Diretriz de UI (combinada com o candidato)**: usar os componentes shadcn/ui sempre no estilo padrão
 gerado pela CLI — nunca customizar radius, border ou shadow. A qualidade visual "premium" vem da
@@ -275,38 +281,170 @@ que o README vai justificar explicitamente como trade-off arquitetural.
       vazia, toggle do switch (default ligado → desligado → ligado), criar tipo novo, editar e
       desativar — Badge mudou de "Ativo" pra "Inativo" corretamente após o PATCH
 
-### 6. Cadastros — Itens
-- [ ] Listagem + form criar (RHF + zod): sku (único, validado), nome, unidade
-- [ ] Hooks React Query: `use-itens`, `use-create-item`
+### 6. Cadastros — Itens  ✅ **concluído**
+- [x] Hooks React Query: `use-itens`, `use-create-item` (`item-keys.ts`) — sem `use-item`/`use-update-item`
+      porque o desafio só pede "Criar; Consultar" para Itens (sem editar, diferente de Clientes/Tipos
+      de Transporte que têm "Editar" explícito)
+- [x] `ItemFormDialog` (create-only, sem modo edição): sku, nome, unidade — todos Input simples
+- [x] SKU duplicado: em vez de toast genérico, capturo `HttpError` com `status === 422` e uso
+      `form.setError("sku", ...)` pra mostrar o erro embaixo do campo certo (mais preciso que um toast
+      solto) — dialog permanece aberto preservando os outros campos já preenchidos
+- [x] `ItensPage`: tabela SKU (fonte monoespaçada)/Nome/Unidade, sem coluna de ações (não há o que
+      editar), loading/erro/vazio
+- [x] Nav atualizado com o link "Itens"
+- [x] Verificado com Playwright: validação de campos vazios, criação válida, e o caso principal —
+      tentar criar item com SKU já existente mostra o erro certo no campo certo sem fechar o dialog
 
-### 7. Gestão de Ordens de Venda
-- [ ] Listagem com paginação simples
-- [ ] Form de criação (RHF + zod, multi-step ou single-page): seleção de cliente → filtra tipos de
-      transporte autorizados → seleção de itens (multi + quantidade, mínimo 1) → submit
-- [ ] Página de detalhe: dados da OV, seletor de próxima transição de status (só mostra transições
-      válidas via `state-machine.ts`), botão de editar transporte (gated por status), timeline de auditoria
-- [ ] Update de status via saga (optimistic + rollback)
+### 7. Gestão de Ordens de Venda  ✅ **concluído**
+- [x] **Primeira slice Redux Toolkit + Saga real do projeto**: `order-status-slice.ts` (estado
+      `pendingByOrderId` só para overlay otimista) + `order-status-saga.ts` (`takeEvery` → seta
+      status otimista → chama a API → invalida React Query [detail/list/auditoria] ou reverte via
+      `finally` limpando o override, sem nunca tocar direto no cache do React Query em caso de erro)
+      registrados em `shared/store/root-reducer.ts`/`root-saga.ts` (que saem do estado placeholder da
+      seção 1). `use-change-order-status.ts` expõe `changeStatus`/`pendingStatus`/`isPending`.
+- [x] Refinamento de arquitetura: HTTP repository do sales-order não implementa literalmente a mesma
+      interface síncrona do repositório server-side (mesma decisão já tomada na seção 4 pro cliente)
+- [x] `OrdensDeVendaPage`: tabela com nomes de cliente/transporte via join client-side, `Badge` por
+      status, paginação client-side simples com `Pagination`/`PaginationPrevious`/`PaginationNext`
+      (shadcn), `Button render={<Link .../>}` pro padrão de link-como-botão do base-ui
+- [x] `SalesOrderForm` (`/ordens-de-venda/nova`): Select de cliente → Select de tipo de transporte
+      filtrado pelos autorizados do cliente (reseta se ficar inválido ao trocar cliente) → itens via
+      `useFieldArray` (Select de item + quantidade + remover, mínimo 1 linha) → submit → redireciona
+      pro detalhe
+- [x] `SalesOrderDetail`: Cards (Cliente/Transporte, Status, Itens, Auditoria), próxima transição via
+      `nextValidStatuses` (só mostra o botão de avanço válido), `EditTransportDialog` gated por status
+      (CRIADA/PLANEJADA), `AuditTimeline` (pulled forward da seção 10, reaproveitável)
+- [x] **2 bugs reais pegos e corrigidos durante a verificação em navegador** (não em curl/unit test):
+  1. Base UI acusava "Select mudando de uncontrolled pra controlled" — `value={x || undefined}`
+     nos 3 Selects do form de criação começava `undefined` e virava string definida após seleção.
+     Corrigido removendo o fallback `|| undefined` (valor sempre string, controlado desde o 1º render).
+  2. Timeline de auditoria não atualizava sozinha após mudar status/transporte — a saga e o
+     `useChangeOrderTransport` só invalidavam `salesOrderKeys`, nunca `auditKeys`, então o evento mais
+     recente ficava faltando até o cache expirar (staleTime 60s). Corrigido invalidando `auditKeys.all`
+     em ambos.
+- [x] **Achado de tooling (não é bug de código)**: rotas dinâmicas aninhadas em 3 níveis
+      (`[id]/status/route.ts`, `[id]/transporte/route.ts`) sumiram do dev server do Turbopack logo
+      após o boot (404 em GET/OPTIONS/PATCH simultaneamente, mesmo depois de um `rm -rf .next`
+      completo) — um `touch` no arquivo forçou o Turbopack a re-escanear e reconhecer a rota (200 daí
+      em diante). O build de produção sempre listou as rotas corretamente, confirmando que é um
+      soluço de cold-start do dev server, não um problema real de roteamento.
+- [x] Verificado com Playwright: edge case de cliente sem transporte autorizado (mensagem correta),
+      filtro de tipos de transporte no form, criação com 2 itens, timeline completa com os 6 eventos
+      (criação + 4 mudanças de status + 1 troca de transporte), gating do botão "Editar" (visível em
+      CRIADA/PLANEJADA, some em EM_TRANSPORTE/ENTREGUE), estado terminal em ENTREGUE
 
-### 8. Monitoramento Operacional
-- [ ] Página dedicada com barra de filtros (status, cliente, tipo de transporte, data) — estado no Redux, sincronizado com querystring
-- [ ] Tabela reaproveitando os componentes de listagem de OV, com contadores/KPIs simples por status
+### 8. Monitoramento Operacional  ✅ **concluído**
+- [x] Reuso real: extraí `SalesOrderTable` (tabela + paginação client-side) de `ordens-de-venda-page.tsx`
+      pra um componente compartilhado, usado tanto pela listagem simples quanto pelo Monitoramento —
+      literalmente "reaproveitando os componentes de listagem de OV" como o checklist pedia
+- [x] **Segunda slice Redux Toolkit + Saga** (a primeira foi a de status na seção 7, com propósito
+      bem diferente — mostra dois usos genuínos, não repetitivos, do padrão): `monitoramento-slice.ts`
+      guarda `draft` (reflete a UI na hora) e `aplicado` (só depois do debounce); `monitoramento-saga.ts`
+      usa `takeLatest` + `delay(300)` — `takeLatest` cancela automaticamente o delay anterior se outro
+      filtro chegar antes, que é o próprio mecanismo de debounce, sem precisar de estado extra
+- [x] `use-monitoramento-filtros.ts`: hidrata o filtro da querystring uma única vez no mount (ação
+      separada `filtrosHidratados`, sem passar pelo debounce — senão um link com filtro mostraria dado
+      não filtrado por 300ms a cada reload) e sincroniza a URL via `router.replace` sempre que o
+      filtro `aplicado` (debounced) mudar
+- [x] `MonitoramentoPage`: KPIs por status (`Card` pequeno por status, contagem sobre o resultado já
+      filtrado), filtros via `Select` (status/cliente/tipo, com valor-sentinela `"todos"` já que
+      `SelectItem value=""` não é permitido) + `Input type="date"`, botão "Limpar filtros"
+- [x] **Bug real pego e corrigido durante a verificação em navegador**: os `Select` mostravam o ID
+      cru (`cli-1`) em vez do nome (`Distribuidora Aurora Ltda`) sempre que o valor vinha de fora
+      (querystring/prop) em vez de uma seleção interativa do usuário — `SelectValue` do base-ui só
+      resolve o rótulo a partir dos `SelectItem` filhos depois que o dropdown foi aberto ao menos uma
+      vez. Corrigido passando a prop documentada `items={Record<value,label>}` pro `Select.Root` em
+      todo lugar onde o valor pode vir pré-preenchido de dados (Monitoramento e `EditTransportDialog`,
+      que tinha o mesmo problema — não afeta os Selects do form de criação de OV, que sempre começam
+      vazios e só recebem valor via clique do usuário).
+- [x] Verificado com Playwright: KPIs batendo com os dados reais, filtro por cliente reduzindo a
+      tabela corretamente, reload preservando o filtro E o rótulo exibido, "Limpar filtros" voltando
+      ao total, e um probe de mudanças rápidas seguidas confirmando que só a URL final é aplicada
+      (debounce funcionando via cancelamento do `takeLatest`, não uma race de múltiplas requisições)
 
-### 9. Central de Agendamento
-- [ ] Tela/drawer de agendamento por OV: data de entrega, janela de atendimento (lista simulada de janelas disponíveis), confirmação
-- [ ] Reagendamento (edita data/janela de um agendamento existente, mantém histórico)
-- [ ] Orquestração via saga (agendar → confirmar → opcionalmente avançar status da OV para AGENDADA)
+### 9. Central de Agendamento  ✅ **concluído**
+- [x] Preenchi um buraco da seção 3: `app/api/agendamentos/[ordemId]/route.ts` só tinha POST/PATCH,
+      sem GET — adicionei o GET (404 tipado se ainda não existe agendamento) já que a UI precisa saber
+      o estado atual antes de decidir "Agendar" vs "Reagendar"
+- [x] **Terceira saga do projeto, e a mais rica**: `confirmar-agendamento-saga.ts` chama a API de
+      confirmar e, só se `statusAtualDaOrdem === "PLANEJADA"`, despacha a MESMA action
+      `changeOrderStatusRequested` da saga de status (seção 7) pra avançar a OV pra AGENDADA —
+      composição de sagas (uma saga disparando a action de outra) em vez de duplicar a lógica de
+      transição. Reagendar uma OV já AGENDADA/EM_TRANSPORTE não repete essa transição.
+- [x] `AgendamentoFormDialog`: form único reaproveitado pra "Agendar" (POST) e "Reagendar" (PATCH),
+      usando o próprio `definirAgendamentoSchema` da seção 3 como resolver (sem duplicar schema);
+      janela de atendimento como `Select` sobre uma lista simulada fixa de 3 janelas
+- [x] `CentralAgendamentoPage` + `AgendamentoRow`: lista OVs a partir de PLANEJADA (CRIADA ainda não
+      tem o que agendar), cada linha busca seu próprio agendamento via `useAgendamento` (um hook por
+      linha, componentes de verdade, não hook-em-loop); ações "Agendar"/"Reagendar"/"Confirmar"
+      escondidas quando ENTREGUE
+- [x] **2 bugs reais pegos e corrigidos na verificação em navegador**:
+  1. Mesma classe de bug do Select uncontrolled→controlled da seção 7, dessa vez no Select de janela
+     do `AgendamentoFormDialog` (`value` começava `undefined` até a 1ª seleção). Corrigido usando
+     sempre uma string definida (`""` quando vazio, não outro placeholder tipo `"-"`, pra continuar
+     disparando o texto de placeholder em vez de tentar resolver um rótulo inexistente).
+  2. **Bug de fuso horário real em `shared/lib/date.ts`**: digitei "01/08/2026" como data de entrega e
+     a linha mostrou "31/07/2026". O construtor nativo `new Date("2026-08-01")` (string só de data,
+     sem horário) é interpretado como meia-noite UTC; em fuso atrás de UTC (Brasília, -03:00) isso
+     exibe o dia anterior. Corrigido trocando `new Date(iso)` por `parseISO(iso)` do date-fns, que
+     trata strings de data pura como meia-noite no fuso LOCAL — strings ISO completas com timezone
+     (como `createdAt`) continuam corretas nos dois casos. Esse helper é usado em toda a aplicação
+     (`formatDate`/`formatDateTime`), então esse bug afetaria qualquer data-only exibida no app, não
+     só agendamento.
+- [x] Verificado com Playwright: OV sem agendamento → Agendar → Confirmar → saga em cadeia avança
+      status automaticamente pra AGENDADA (response 200 tanto do confirmar quanto do PATCH de status
+      disparado pela saga) → badges corretos; OV já AGENDADA com agendamento confirmado → Reagendar →
+      status permanece AGENDADA (não tenta repetir a transição) → agendamento volta pra "Não
+      confirmado" (reagendar reressata a confirmação, como já era o comportamento da API)
 
-### 10. Auditoria
-- [ ] Componente `AuditTimeline` (features/auditoria/presentation) reaproveitado no detalhe da OV
-- [ ] Garantir que os 4 eventos mínimos (criação de OV, alteração de status, alteração de agendamento, alteração de transporte) realmente geram entradas
+### 10. Auditoria  ✅ **concluído**
+- [x] `AuditTimeline` já existia (seção 7) e já era reaproveitado no detalhe da OV — nesta seção
+      enriqueci o componente com uma função `describeChange()` que formata `estadoAnterior`→
+      `estadoPosterior` de forma legível por tipo de ação (status/transporte resolvidos pra nomes
+      via label maps; agendamento mostra data+janela ou "confirmado/desfeito"; criação de OV não
+      mostra detalhe, já que `estadoPosterior` é a entidade inteira e o rótulo da ação já basta)
+- [x] Revisão de cobertura: grep confirmou exatamente 6 pontos de gravação de auditoria no código
+      (1 criação + 1 status + 1 transporte + 3 agendamento — definir/reagendar/confirmar), todos com
+      `entidadeId` = id da OV independente do `entidadeTipo`, o que já fazia o filtro por
+      `entidadeId` (sem filtrar por tipo) no detalhe da OV capturar corretamente eventos de
+      `OrdemDeVenda` E `Agendamento` juntos
+- [x] **Bug real de precisão de auditoria pego na revisão de código (não em runtime)**:
+      `confirmar-agendamento.ts` gravava `estadoAnterior: { confirmado: false }` como valor fixo em
+      vez de ler o estado real do agendamento antes de confirmar — inofensivo no fluxo feliz (já é
+      sempre `false` ali), mas gravaria um histórico falso se alguém confirmasse um agendamento já
+      confirmado. Corrigido pra ler `agendamento.confirmado` antes da mutação, igual já era feito em
+      `reagendar.ts`.
+- [x] Verificado com um ciclo de vida completo (criar → planejar → trocar transporte → definir
+      agendamento → reagendar → confirmar → agendada → em transporte → entregue): os 9 eventos de
+      auditoria gerados batem exatamente com as 9 ações realizadas, e a timeline renderiza cada um
+      com o detalhe certo (ex.: "Caminhão → Carreta", "Planejada → Agendada", "12/08/2026 · 18:00–
+      22:00", "Agendamento confirmado") sem erros no console
 
-### 11. Testes (Vitest)
-- [ ] Unitário: `state-machine.test.ts` (todas as transições válidas/inválidas)
-- [ ] Unitário: `isTransportAuthorized.test.ts`
-- [ ] Unitário: use-case `create-sales-order.test.ts` (rejeita 0 itens, rejeita transporte não autorizado, aceita caso válido)
-- [ ] Integração: `POST /api/ordens-de-venda` chamando o route handler diretamente (Request construído na mão) — caminho feliz (201 + audit event) e caminho de rejeição (422)
-- [ ] Integração: `PATCH /api/ordens-de-venda/[id]/status` (transição inválida → 422)
-- [ ] Componente (RTL): validação do form de criação de OV (campo obrigatório, mínimo 1 item)
+### 11. Testes (Vitest)  ✅ **concluído**
+- [x] Unitário: `state-machine.test.ts` (sequência válida completa, transições fora de ordem, no-op de
+      mesmo status, estado terminal `ENTREGUE`, `nextValidStatuses` por estado)
+- [x] Unitário: `isTransportAuthorized.test.ts` (transporte autorizado, não autorizado, cliente sem
+      nenhum transporte autorizado)
+- [x] Unitário: use-case `create-sales-order.test.ts` (caminho feliz, cliente inexistente, transporte
+      não autorizado, item inexistente, 0 itens)
+  - [x] **Bug de defesa em profundidade pego escrevendo o teste**: o use-case `createSalesOrder`
+        confiava que o zod já barrava `itens.length === 0` na borda (route handler), mas o teste
+        unitário chama o use-case direto, sem passar pelo zod — array vazio não era revalidado
+        dentro do próprio use-case. Corrigido adicionando a checagem explícita em
+        `create-sales-order.ts`, mesmo padrão de defesa em profundidade já usado para
+        cliente/transporte/itens logo acima no mesmo arquivo.
+- [x] Integração: `POST /api/ordens-de-venda` chamando o route handler diretamente (`Request`
+      construído na mão, sem subir servidor) — caminho feliz (201 + audit event `CRIACAO_ORDEM_VENDA`
+      gravado com `entidadeTipo: "OrdemDeVenda"`) e caminho de rejeição (422 transporte não autorizado,
+      confirmando que nada foi persistido em `db.ordensDeVenda`)
+- [x] Integração: `PATCH /api/ordens-de-venda/[id]/status` (422 transição fora de sequência, 200
+      transição válida CRIADA→PLANEJADA, 404 ordem inexistente)
+- [x] Componente (RTL): `sales-order-form.test.tsx` — validação do form de criação de OV ao submeter
+      vazio (cliente/transporte/item obrigatórios), com `fetch` mockado via `vi.stubGlobal` pra manter
+      o teste determinístico e sem rede real
+- [x] Verificado: `bun run test` (7 arquivos, 21 testes, todos passando), `bun run lint` (só 1 warning
+      pré-existente e não relacionado em `sales-order-detail.tsx`, de commit anterior), `bunx tsc
+      --noEmit` limpo, `bun run build` (16 páginas estáticas + 12 rotas de API, sem erros)
 
 ### 12. Documentação (README)
 - [ ] Instruções de execução (`npm install`, `npm run dev`, `npm run test`)

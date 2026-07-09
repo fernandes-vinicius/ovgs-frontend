@@ -25,6 +25,13 @@ export function createSalesOrder(input: CreateSalesOrderInput, deps: Deps): Resu
     return err(validationError("Tipo de transporte não autorizado para este cliente."));
   }
 
+  // O schema zod já exige `itens.length >= 1`, mas revalidamos aqui pela mesma
+  // razão de defesa em profundidade que já vale para as checagens acima —
+  // este use-case não deve confiar cegamente na camada de validação de entrada.
+  if (input.itens.length === 0) {
+    return err(validationError("A ordem de venda deve conter ao menos um item."));
+  }
+
   for (const { itemId } of input.itens) {
     if (!deps.itemRepository.findById(itemId)) {
       return err(validationError(`Item ${itemId} não encontrado.`));
